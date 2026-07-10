@@ -1,0 +1,449 @@
+/* styles/compare.css — the compare page: chrome shell + colored-phosphor stage
+   (design §13, §14). */
+
+.compare {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.compare__body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.compare__main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--gap);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.compare__stage {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Header: home wordmark + the two swap-in-place pickers. */
+.compare__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  z-index: 5; /* keep dropdowns above the stage */
+  flex-wrap: wrap;
+}
+.compare__home {
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(255, 176, 0, 0.4);
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+.compare__pickers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.compare__pickers .picker {
+  width: 170px;
+}
+
+/* --- The stage: a rounded black CRT screen with an oscilloscope grid --- */
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: crosshair;
+  /* The stage is a drag/zoom surface. Without these, dragging across the
+     caption text starts a native text-selection gesture; once a selection
+     exists the next drag becomes a select-drag that seizes the pointer and
+     fires pointercancel ~1px in, killing the pan. touch-action stops touch
+     scroll/pinch from doing the same. */
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.stage.is-panning {
+  cursor: grabbing;
+}
+
+/* Spatial grid is anchored to WORLD space: SpatialStage drives these vars from
+   the camera each frame, so the grid pans, zooms, and gains a finer subdivision
+   as you zoom in (major spacing snaps to nice meters; minor = major/5). Two
+   layered gradients — major (brighter) painted over minor. The count scene
+   keeps the plain static grid on .stage above. */
+.stage--spatial {
+  --grid-major: 64px;
+  --grid-minor: 0px;
+  --grid-ox: 0px;
+  --grid-oy: 0px;
+  background-image:
+    linear-gradient(var(--grid-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-strong) 1px, transparent 1px),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:
+    var(--grid-major) var(--grid-major),
+    var(--grid-major) var(--grid-major),
+    var(--grid-minor) var(--grid-minor),
+    var(--grid-minor) var(--grid-minor);
+  background-position:
+    var(--grid-ox) var(--grid-oy),
+    var(--grid-ox) var(--grid-oy),
+    var(--grid-ox) var(--grid-oy),
+    var(--grid-ox) var(--grid-oy);
+}
+
+.stage__scene {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.stage__ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--ground);
+  box-shadow: 0 0 6px rgba(58, 54, 46, 0.6);
+}
+
+.stage__item {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Silhouette: mask-recolored to its stage hue, blooming like a phosphor trace.
+   transform-origin is the FOOT so the hatch scale never hops off the ground.
+   --flip (facing) and --hatch-scale (hatch) compose into one transform so they
+   never fight over the `transform` property; the transition on `transform`
+   interpolates the resolved matrix, so the hatch stays smooth either way. */
+.stage__silhouette {
+  --flip: 1;
+  --hatch-scale: 1;
+  position: absolute;
+  background-color: var(--hue);
+  -webkit-mask: var(--src) no-repeat center / 100% 100%;
+  mask: var(--src) no-repeat center / 100% 100%;
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--hue) 32%, transparent));
+  transform-origin: bottom center;
+  transform: scaleX(var(--flip)) scale(var(--hatch-scale));
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+.is-marker .stage__silhouette {
+  opacity: 0;
+  --hatch-scale: 0.55;
+}
+.is-silhouette .stage__silhouette {
+  opacity: 1;
+  --hatch-scale: 1;
+}
+
+/* Marker: dot on the true foot, label + leader rising above it. */
+.stage__marker {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: opacity 0.25s ease;
+}
+.is-silhouette .stage__marker {
+  opacity: 0;
+}
+.stage__marker-label {
+  color: var(--hue);
+  font-size: 11px;
+  white-space: nowrap;
+  margin-bottom: 3px;
+  text-shadow: 0 0 6px color-mix(in srgb, var(--hue) 40%, transparent);
+}
+.stage__marker-leader {
+  width: 1px;
+  height: 24px;
+  background: var(--hue);
+  opacity: 0.55;
+}
+.stage__marker-dot {
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--hue);
+  box-shadow: 0 0 8px var(--hue);
+}
+
+/* Anchor-dim measurement bracket — dashed, hue-tinted, hidden for markers. */
+.stage__measure {
+  position: absolute;
+  opacity: 0.85;
+  transition: opacity 0.25s ease;
+}
+.is-marker .stage__measure {
+  opacity: 0;
+}
+.stage__measure.is-horizontal {
+  border-top: 1px dashed var(--hue);
+}
+.stage__measure.is-vertical {
+  border-left: 1px dashed var(--hue);
+}
+.stage__measure-label {
+  position: absolute;
+  color: var(--hue);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.stage__measure.is-horizontal .stage__measure-label {
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.stage__measure.is-vertical .stage__measure-label {
+  left: -6px;
+  top: 50%;
+  transform: translate(-100%, -50%);
+}
+
+.stage__caption {
+  position: absolute;
+  transform: translateX(-50%);
+  color: var(--hue);
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+/* --- Count scene --- */
+.stage--count {
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.count__scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  transform-origin: center;
+  padding: 24px;
+}
+.count__glyph {
+  background-color: var(--hue);
+  -webkit-mask: var(--src) no-repeat center / 100% 100%;
+  mask: var(--src) no-repeat center / 100% 100%;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--hue) 32%, transparent));
+}
+.count__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.count__hero-name {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.count__tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  justify-content: center;
+  max-width: 70%;
+}
+.count__label {
+  font-size: 20px;
+  color: var(--hue);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--hue) 40%, transparent);
+}
+.count__n {
+  font-weight: 700;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  width: 380px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding: var(--gap);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar__cta {
+  width: 100%;
+  background: rgba(255, 106, 43, 0.09);
+  border: 1px dashed var(--warn);
+  color: #ffae85;
+  border-radius: 6px;
+  padding: 9px 10px;
+  font-size: 12px;
+  text-align: left;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+.sidebar__cta:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.panel {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 12px;
+}
+.panel__head {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.panel__head::before {
+  content: ">";
+  color: var(--accent);
+  display: inline-block;
+  transition: transform 0.15s;
+}
+.panel.collapsed .panel__head::before {
+  transform: rotate(90deg);
+}
+.panel__body {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.panel.collapsed .panel__body {
+  display: none;
+}
+
+.fact {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.fact__k {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.fact__v {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.fact__desc {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.fact__src {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.equiv {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 13px;
+}
+.equiv__n {
+  color: var(--accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.equiv__unit {
+  color: var(--text);
+}
+.equiv__note {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* --- Bottom control bar --- */
+.controlbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px var(--gap);
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+}
+.controlbar__group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.controlbar__camera {
+  display: flex;
+  gap: 6px;
+  margin-left: 6px;
+}
+.controlbar__stats {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+}
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.stat__name {
+  color: var(--hue);
+  font-size: 12px;
+  font-weight: 600;
+}
+.stat__num {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.stat__tag {
+  color: var(--muted);
+  font-size: 10px;
+}
+.stat__num-value {
+  color: var(--hue); /* the one sanctioned bridge: stage hue into chrome (§14) */
+  font-size: 13px;
+}

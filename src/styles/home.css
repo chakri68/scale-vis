@@ -1,0 +1,136 @@
+/* styles/home.css — the landing page. */
+.home {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: var(--gap);
+  text-align: center;
+}
+
+.home__title {
+  font-family: var(--font-pixel);
+  font-size: clamp(20px, 5vw, 34px);
+  letter-spacing: -0.5px;
+  color: var(--accent);
+  text-shadow: 0 0 14px rgba(255, 176, 0, 0.5);
+  margin: 0;
+  animation: title-glow 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes title-glow {
+  from {
+    text-shadow: 0 0 10px rgba(255, 176, 0, 0.35);
+  }
+  to {
+    text-shadow: 0 0 20px rgba(255, 176, 0, 0.65);
+  }
+}
+
+.home__tagline {
+  color: var(--muted);
+  margin: -10px 0 0;
+}
+
+.home__pickers {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.home__vs {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+
+/* Searchable picker */
+.picker {
+  position: relative;
+  width: 200px;
+}
+.picker__input {
+  width: 100%;
+}
+.picker__list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  /* Animated open: fade + rise + slight scale. Kept in the DOM (not display
+     toggled) so it can transition; pointer-events gate interaction when shut. */
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top center;
+  pointer-events: none;
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.picker__list.is-open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.picker__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 13px;
+  text-align: left;
+}
+.picker__row:last-child {
+  border-bottom: 0;
+}
+.picker__row:hover {
+  background: var(--panel-2);
+  color: var(--accent);
+}
+.picker__cat {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.home__popular {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+  justify-content: center;
+  max-width: 640px;
+  font-size: 12px;
+}
+.home__popular-label {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.home__popular-link {
+  color: var(--text);
+}
+.home__popular-link:hover {
+  color: var(--accent);
+}
+
+.home__surprise {
+  margin-top: 4px;
+}

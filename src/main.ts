@@ -1,60 +1,56 @@
-import './style.css'
-import typescriptLogo from './assets/typescript.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import { setupCounter } from './counter.ts'
+// main.ts — entry: mount app, start router (design §3).
+import "./styles/tokens.css";
+import "./styles/base.css";
+import "./styles/home.css";
+import "./styles/compare.css";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${typescriptLogo}" class="framework" alt="TypeScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.ts</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+import { loadItems } from "./data/load";
+import { buildIndex } from "./data/search";
+import { onRouteChange, parseHash, navigate } from "./app/router";
+import { mountHome, type Page } from "./app/pages/home";
+import { mountCompare } from "./app/pages/compare";
 
-<div class="ticks"></div>
+const root = document.getElementById("app")!;
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://www.typescriptlang.org" target="_blank">
-          <img class="button-icon" src="${typescriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+async function boot() {
+  const items = await loadItems();
+  const index = buildIndex(items);
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`
+  let current: Page | null = null;
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+  const renderRoute = () => {
+    const route = parseHash();
+    current?.destroy();
+    current = null;
+
+    if (route.name === "compare") {
+      const a = index.byId.get(route.a);
+      const b = index.byId.get(route.b);
+      if (!a || !b) {
+        navigate("#/");
+        return;
+      }
+      current = mountCompare(root, a, b, route.mode, index);
+    } else {
+      current = mountHome(root, index);
+    }
+  };
+
+  onRouteChange(renderRoute);
+  renderRoute();
+
+  // Reveal only once the pixel font is in — never flash a fallback (§15).
+  try {
+    await document.fonts.ready;
+  } catch {
+    /* fonts API unavailable — reveal anyway */
+  }
+  document.body.classList.remove("booting");
+  document.body.classList.add("booted");
+}
+
+boot().catch((err) => {
+  console.error(err);
+  root.innerHTML = `<pre class="fatal">boot failed:\n${String(err)}</pre>`;
+  document.body.classList.remove("booting");
+});
