@@ -161,7 +161,7 @@
   },
   {
     "id": "bus",
-    "name": "Double-Decker Bus",
+    "name": "Bus",
     "category": "vehicle",
     "svg": "bus.svg",
     "svgTop": "bus-top.svg",
@@ -171,7 +171,7 @@
     "weight": 12000,
     "weightRange": [11000, 13000],
     "anchor": "length",
-    "sourceUrl": "https://en.wikipedia.org/wiki/Double-decker_bus",
+    "sourceUrl": "https://en.wikipedia.org/wiki/bus",
     "aliases": ["double decker", "london bus"],
     "description": "The classic 'how many buses long' unit."
   },

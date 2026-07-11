@@ -39,7 +39,10 @@ export function createPicker(index: SearchIndex, opts: PickerOpts = {}): Picker 
 
   const render = () => {
     clear(list);
-    const results = search(index, input.value);
+    // No cap: show every match. The list is a fixed-height scroll container
+    // (.picker__list), so the full inventory stays reachable by scrolling
+    // rather than getting truncated to a top-N.
+    const results = search(index, input.value, Infinity);
     for (const item of results) {
       const row = el("button", { class: "picker__row", type: "button" }, [
         el("span", { class: "picker__name", text: item.name }),

@@ -14,6 +14,7 @@ import {
 } from "../../scale";
 import type { SearchIndex } from "../../data/search";
 import { createPicker } from "../picker";
+import { downloadCard, type CardInput } from "../../render/export-card";
 import { compareHash, navigate, replace } from "../router";
 import type { Mode, SpatialMode } from "../state";
 import type { Item } from "../../data/schema";
@@ -154,8 +155,84 @@ export function mountCompare(
 
   const stats = el("div", { class: "controlbar__stats" });
 
+  // Export the current comparison as a shareable PNG card. Reconstructs the
+  // scene on a canvas (see export-card.ts) from whichever scene is live.
+  const buildCardInput = (): CardInput => {
+    if (isCountScene()) {
+      const metric = countMetric();
+      const [hero, unit] = heroUnit(metric);
+      return { scene: "count", hero, unit, metric, n: count(hero, unit, metric) };
+    }
+    return { scene: "spatial", a, b, mode: mode as SpatialMode };
+  };
+  const exportLabel = el("span", { text: "PNG" });
+  const exportBtn = el("button", {
+    class: "controlbar__export",
+    type: "button",
+    title: "download a shareable PNG card",
+  }, [el("span", { class: "controlbar__export-icon", text: "⤓" }), exportLabel]);
+  exportBtn.addEventListener("click", async () => {
+    if (exportBtn.hasAttribute("disabled")) return;
+    exportBtn.setAttribute("disabled", "");
+    exportLabel.textContent = "…";
+    try {
+      await downloadCard(buildCardInput());
+    } catch (err) {
+      console.error("[export] card render failed", err);
+      exportLabel.textContent = "failed";
+      setTimeout(() => (exportLabel.textContent = "PNG"), 1500);
+      exportBtn.removeAttribute("disabled");
+      return;
+    }
+    exportLabel.textContent = "PNG";
+    exportBtn.removeAttribute("disabled");
+  });
+
+  // Copy the current comparison link. The URL is the shareable source of truth
+  // (§12), so location.href already carries the pair + mode.
+  const shareLabel = el("span", { text: "Share" });
+  const shareBtn = el("button", {
+    class: "controlbar__action",
+    type: "button",
+    title: "copy link to this comparison",
+    // U+2197 + U+FE0E: force TEXT presentation so it renders as a thin terminal
+    // glyph, never a color emoji (matches the ⇄ / ⟲ / ⤓ symbols already in use).
+  }, [el("span", { class: "controlbar__action-icon", text: "↗︎" }), shareLabel]);
+  let shareResetTimer = 0;
+  const flashShare = (text: string, ok: boolean) => {
+    shareLabel.textContent = text;
+    shareBtn.classList.toggle("is-ok", ok);
+    clearTimeout(shareResetTimer);
+    shareResetTimer = window.setTimeout(() => {
+      shareLabel.textContent = "Share";
+      shareBtn.classList.remove("is-ok");
+    }, 1500);
+  };
+  shareBtn.addEventListener("click", async () => {
+    const url = location.href;
+    const data = { title: `Scale-Vis — ${a.name} vs ${b.name}`, url };
+    // Native share sheet where the platform has one (mobile, Safari, Edge).
+    // Feature-detect; a user-cancelled sheet throws AbortError and is a no-op,
+    // not a failure. Anything else falls through to copying the link.
+    if (navigator.share && (!navigator.canShare || navigator.canShare(data))) {
+      try {
+        await navigator.share(data);
+        return;
+      } catch (err) {
+        if ((err as Error)?.name === "AbortError") return;
+      }
+    }
+    const ok = await copyText(url);
+    flashShare(ok ? "Copied!" : "Copy failed", ok);
+  });
+
   controlbar.append(
-    el("div", { class: "controlbar__group" }, [...modeChips, cameraCtl]),
+    el("div", { class: "controlbar__group" }, [
+      ...modeChips,
+      cameraCtl,
+      shareBtn,
+      exportBtn,
+    ]),
     stats,
   );
 
@@ -325,6 +402,32 @@ function statNum(text: string, tag: string): HTMLElement {
     el("span", { class: "stat__tag", text: tag }),
     value,
   ]);
+}
+
+/** Copy text to the clipboard, falling back to a hidden-textarea execCommand
+ *  when the async Clipboard API is unavailable (insecure origin, older engine).
+ *  Returns whether the copy landed. */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // fall through to the legacy path
+  }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.cssText = "position:fixed;top:-9999px;opacity:0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  } catch {
+    return false;
+  }
 }
 
 function iconBtn(glyph: string, title: string, onClick: () => void): HTMLElement {

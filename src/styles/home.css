@@ -65,7 +65,7 @@
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 6px;
-  max-height: 240px;
+  max-height: 320px;
   overflow-y: auto;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
   /* Animated open: fade + rise + slight scale. Kept in the DOM (not display
