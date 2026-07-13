@@ -1,22 +1,10 @@
-/* styles/tokens.css — Amber Phosphor Terminal tokens (design §14). */
+/* styles/tokens.css — scale-vis's own tokens. The shared Amber Phosphor chrome
+   (bg, panel, border, text, accent, warn, fonts) comes from
+   theme.chakri.me/tokens.css; only project-specific tokens live here. */
 :root {
-  /* --- CHROME (strict amber terminal) --- */
-  --bg: #000000; /* pure black — stage + deepest wells */
-  --panel-2: #000000; /* input & button backgrounds */
-  --panel: #0b0b0a; /* app + sidebar surface, a hair above black */
-  --border: #2b2925; /* warm dark-gray hairlines */
-  --text: #ece7da; /* warm off-white — chrome text */
-  --muted: #8b8574; /* warm gray — labels, secondary */
-  --accent: #ffb000; /* amber phosphor — CHROME ONLY */
-  --accent-dim: #cc8a00;
-  --warn: #ff6a2b;
-
   --grid: #16150f; /* faint oscilloscope grid — minor lines */
   --grid-strong: #262319; /* major grid lines, a touch brighter for hierarchy */
   --ground: #3a362e; /* stage ground line */
-
-  --font-pixel: "Press Start 2P", ui-monospace, monospace;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --radius: 6px;
   --gap: clamp(10px, 2vw, 20px);
 
