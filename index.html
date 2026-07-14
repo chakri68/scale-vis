@@ -28,7 +28,10 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Scale-Vis" />
     <meta property="og:url" content="https://scale-vis.chakri.me/" />
-    <meta property="og:title" content="Scale-Vis — compare anything to anything" />
+    <meta
+      property="og:title"
+      content="Scale-Vis — compare anything to anything"
+    />
     <meta
       property="og:description"
       content="Put any two things side by side at true scale — animals, vehicles, dinosaurs, everyday objects. A fast, amber-terminal size comparator."
@@ -43,7 +46,10 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Scale-Vis — compare anything to anything" />
+    <meta
+      name="twitter:title"
+      content="Scale-Vis — compare anything to anything"
+    />
     <meta
       name="twitter:description"
       content="Put any two things side by side at true scale — animals, vehicles, dinosaurs, everyday objects."
@@ -66,8 +72,12 @@
          and its styles are applied, then reveal — kills the flash of unstyled
          HTML (Vite injects CSS via JS in dev; also guards a slow first load). -->
     <style>
-      html { background: #000; }
-      body { visibility: hidden; }
+      html {
+        background: #000;
+      }
+      body {
+        visibility: hidden;
+      }
     </style>
     <script>
       addEventListener("DOMContentLoaded", function () {
@@ -76,9 +86,22 @@
         });
       });
     </script>
-    <noscript><style>body { visibility: visible; }</style></noscript>
+    <noscript
+      ><style>
+        body {
+          visibility: visible;
+        }
+      </style></noscript
+    >
     <!-- Amber Phosphor theme tokens — single source of truth -->
     <link rel="stylesheet" href="https://theme.chakri.me/tokens.css" />
+    <!-- Cloudflare Web Analytics -->
+    <script
+      type="module"
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "dc2b98031456431bbc1b7f6a04052ffd"}'
+    ></script>
+    <!-- End Cloudflare Web Analytics -->
   </head>
   <body class="booting">
     <div id="app"></div>
