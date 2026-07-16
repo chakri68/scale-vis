@@ -9,6 +9,7 @@
 // threshold reads.
 import { el, clear } from "./dom";
 import { stageColor } from "./stage-color";
+import { Tribute } from "./tribute";
 import {
   basePPM,
   effectivePPM,
@@ -60,6 +61,7 @@ export class SpatialStage {
   private primaryMeters: number[] = [];
   private primaryVertical = false; // height/top call out a vertical dimension
   private camera: Camera = openingCamera();
+  private tribute = new Tribute(); // Alan Grant, when the cast calls for him
   private ro?: ResizeObserver;
   private base = 1;
   private ac?: AbortController; // removes input listeners on destroy()
@@ -87,7 +89,8 @@ export class SpatialStage {
     this.mode = mode;
     this.camera = openingCamera();
     this.computeProjections();
-    this.buildNodes();
+    this.buildNodes(); // clears the scene — the tribute must mount after it
+    this.tribute.setComparison(this.scene, items, mode);
     this.reflow();
   }
 
@@ -119,6 +122,7 @@ export class SpatialStage {
   }
 
   destroy() {
+    this.tribute.destroy(); // drops its intro timer, not just its node
     this.ro?.disconnect();
     this.ac?.abort(); // drop input listeners — else a new stage on this same
     // container (e.g. Length↔Height swap) would stack a second set on top.
@@ -174,7 +178,12 @@ export class SpatialStage {
   /** Re-measure the viewport and recompute the opening ppm, then render. */
   private reflow() {
     if (this.items.length === 0) return;
-    this.base = basePPM(this.projs, this.viewport());
+    // Alan is fit with the items, not around them — he's standing on the same
+    // ground, so the frame has to account for him or he overflows it.
+    this.base = basePPM(
+      [...this.projs, ...this.tribute.projection()],
+      this.viewport(),
+    );
     this.render();
   }
 
@@ -192,10 +201,20 @@ export class SpatialStage {
         primaryMeters: this.primaryMeters[i],
       }),
     );
+    // Alan takes the leading slot in the row, counted in the total so the whole
+    // cast centers together. Laid out beside the group instead, he hangs off the
+    // stage's clipped edge the moment the group is wide. reflow() feeds the same
+    // footprint to basePPM, so the slot he takes here is the slot the fit
+    // reserved for him.
+    const tributeW = this.tribute.widthAt(ppm);
     const totalW =
       states.reduce((s, rs) => s + rs.wPx, 0) +
-      (states.length - 1) * ITEM_GAP;
+      (states.length - 1) * ITEM_GAP +
+      (tributeW > 0 ? tributeW + ITEM_GAP : 0);
     let x = (w - totalW) / 2;
+
+    this.tribute.layout(ppm, x, groundY);
+    if (tributeW > 0) x += tributeW + ITEM_GAP;
 
     // Pan lives here and ONLY here.
     this.scene.style.transform = `translate(${this.camera.panX}px, ${this.camera.panY}px)`;

@@ -48,6 +48,38 @@
     "description": "Turkey-sized, not the movie's. Sorry."
   },
   {
+    "id": "utahraptor",
+    "name": "Utahraptor",
+    "category": "dinosaur",
+    "svg": "utahraptor.svg",
+    "svgTop": "utahraptor-top.svg",
+    "length": 6,
+    "height": 1.8,
+    "width": 0.79,
+    "weight": 400,
+    "weightRange": [280, 500],
+    "anchor": "length",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Utahraptor",
+    "aliases": ["utah raptor", "big raptor"],
+    "description": "Described in 1993, the year Jurassic Park opened. Its raptors are far closer to this than to the real Velociraptor."
+  },
+  {
+    "id": "gallimimus",
+    "name": "Gallimimus",
+    "category": "dinosaur",
+    "svg": "gallimimus.svg",
+    "svgTop": "gallimimus-top.svg",
+    "length": 6,
+    "height": 2.6,
+    "width": 0.94,
+    "weight": 440,
+    "weightRange": [400, 490],
+    "anchor": "length",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Gallimimus",
+    "aliases": ["galli", "ostrich dinosaur"],
+    "description": "Built like an ostrich and flocked like one. The one that moves like a bird."
+  },
+  {
     "id": "argentinosaurus",
     "name": "Argentinosaurus",
     "category": "dinosaur",
@@ -62,6 +94,22 @@
     "sourceUrl": "https://en.wikipedia.org/wiki/Argentinosaurus",
     "aliases": ["argentino"],
     "description": "One of the largest land animals ever. A long, long neck."
+  },
+  {
+    "id": "brachiosaurus",
+    "name": "Brachiosaurus",
+    "category": "dinosaur",
+    "svg": "brachiosaurus.svg",
+    "svgTop": "brachiosaurus-top.svg",
+    "length": 22,
+    "height": 12,
+    "width": 4.5,
+    "weight": 35000,
+    "weightRange": [28300, 46900],
+    "anchor": "height",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Brachiosaurus",
+    "aliases": ["brachiosaur", "brachio"],
+    "description": "Front legs longer than the back — a sauropod built like a giraffe."
   },
   {
     "id": "blue-whale",

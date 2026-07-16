@@ -231,6 +231,118 @@
   opacity: 0.85;
 }
 
+/* --- Tribute: Dr. Alan Grant, in memory of Sam Neill --- */
+/* Same mask-recolor treatment as an item silhouette, because he's standing on
+   the same ground at the same ppm. The amber is what says he isn't data. */
+.tribute {
+  --hue: var(--tribute);
+  position: absolute;
+  pointer-events: none; /* only the figure is a target */
+  transition: opacity 0.25s ease;
+}
+/* Set by layout() below the glyph floor: opacity on the root takes the bubble
+   with it, so there's no state where a hidden Alan can still be hovered. */
+.tribute.is-hidden {
+  opacity: 0;
+}
+.tribute.is-hidden .tribute__figure {
+  pointer-events: none;
+}
+
+.tribute__figure {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background-color: var(--hue);
+  -webkit-mask: var(--src) no-repeat center / 100% 100%;
+  mask: var(--src) no-repeat center / 100% 100%;
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--hue) 32%, transparent));
+  pointer-events: auto;
+  cursor: pointer; /* the one hint that he's worth clicking */
+  transition: filter 0.2s ease;
+}
+.tribute__figure:hover,
+.tribute__figure:focus-visible {
+  outline: none;
+  filter: drop-shadow(0 0 13px color-mix(in srgb, var(--hue) 65%, transparent));
+}
+
+/* Bubble rides above his hat. Open on arrival (is-open), then hover/focus only.
+   It opens RIGHTWARD from his center rather than centering on him: he always
+   stands at the left end of the row, so a centered bubble runs straight off the
+   stage's clipped edge. The tail's offset below matches this margin. */
+.tribute__bubble {
+  position: absolute;
+  bottom: calc(100% + 13px);
+  left: 50%;
+  margin-left: -24px;
+  width: max-content;
+  max-width: 250px;
+  padding: 9px 11px;
+  background: var(--panel-2);
+  border: 1px solid color-mix(in srgb, var(--hue) 45%, transparent);
+  border-radius: 9px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.tribute.is-open .tribute__bubble,
+.tribute:hover .tribute__bubble,
+.tribute:focus-within .tribute__bubble {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Tail: border triangle with the panel fill laid 1px over it. Sits at the
+   bubble's margin-left offset, which lands it over his center. */
+.tribute__bubble::before,
+.tribute__bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 24px;
+  width: 0;
+  height: 0;
+  border: 7px solid transparent;
+  border-bottom: 0;
+}
+.tribute__bubble::before {
+  transform: translateX(-50%);
+  border-top-color: color-mix(in srgb, var(--hue) 45%, transparent);
+}
+.tribute__bubble::after {
+  transform: translateX(-50%) translateY(-1px);
+  border-top-width: 6px;
+  border-top-color: var(--panel-2);
+}
+
+.tribute__quote {
+  margin: 0;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
+}
+.tribute__quote::before {
+  content: "\201C";
+}
+.tribute__quote::after {
+  content: "\201D";
+}
+.tribute__memorial {
+  margin: 7px 0 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  color: var(--hue);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
 /* --- Count scene --- */
 .stage--count {
   cursor: default;

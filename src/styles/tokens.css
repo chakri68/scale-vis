@@ -15,4 +15,10 @@
   --trace-4: #a98cf0; /* violet */
   --trace-5: #93c95b; /* green  */
   --trace-6: #e86fa0; /* rose   */
+
+  /* Alan Grant's shirt. Deliberately outside the trace rotation: the tribute
+     figure is not an item and must never pick up a hue that would file him as
+     one. Darker than any trace, which is the point — he's present, not competing
+     with the thing you came to measure. */
+  --tribute: rgb(77, 110, 157);
 }
